@@ -98,12 +98,6 @@ const Post = ({ post, handleUpvote, handleDownvote, handleReply, replyInputState
               bordered
               clearable
               size="sm"
-              style={{
-                backgroundColor: '#fff',
-                color: '#333',
-                borderRadius: '8px',
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-              }}
             />
             <Button
               onClick={() => handleReply(post.id)}
@@ -192,12 +186,6 @@ export default function TopicTribe() {
             bordered
             clearable
             size="lg"
-            style={{
-              backgroundColor: '#fff',
-              color: '#333',
-              borderRadius: '8px',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-            }}
           />
         </div>
 
@@ -208,13 +196,6 @@ export default function TopicTribe() {
             bordered
             clearable
             size="lg"
-            multiline
-            style={{
-              backgroundColor: '#fff',
-              color: '#333',
-              borderRadius: '8px',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-            }}
           />
         </div>
 
