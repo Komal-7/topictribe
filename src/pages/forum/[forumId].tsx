@@ -1,236 +1,241 @@
-import { useState } from 'react';
-import { Input, Card, Button, Avatar } from '@nextui-org/react';
-import Link from 'next/link';
-import { useRouter } from 'next/router';
+import { useState } from "react";
+import { Card, CardHeader, CardBody, CardFooter, Divider, Avatar, Button, Link, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Textarea } from "@nextui-org/react";
+import NextLink from 'next/link'; // Import NextLink for the Link component
 
-// Dummy Topics Data
-const topics = [
-  { id: 1, title: 'Topic 1', forumId: 1 },
-  { id: 2, title: 'Topic 2', forumId: 1 },
-  { id: 3, title: 'Topic 3', forumId: 2 },
-];
-
-// Sample Post Data
-const samplePost = {
-  id: 1,
-  author: 'John Doe',
-  text: 'This is a sample post in the discussion forum. What are your thoughts on the topic?',
-  upvotes: 10,
-  downvotes: 2,
-  replies: [
-    { id: 1, author: 'Jane Doe', text: 'I agree with the points mentioned here!' },
-    { id: 2, author: 'Alice Smith', text: 'This is a very interesting discussion.' },
-  ],
-};
-
-// Post Component (UI Only)
-const Post = ({ post, handleUpvote, handleDownvote, handleReply, replyInputState, setReplyInputState }) => {
-  const [replyText, setReplyText] = useState('');
-
-  return (
-    <Card
-      variant="bordered"
-      style={{
-        marginBottom: '12px',
-        padding: '15px',
-        backgroundColor: '#ffffff',
-        borderRadius: '8px',
-        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-        border: '1px solid #e1e1e1',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-        <Avatar color="primary" text={post.author[0]} size="sm" />
-        <div style={{ flex: 1 }}>
-          <strong style={{ fontSize: '16px' }}>{post.author}</strong>
-          <p style={{ fontSize: '14px', marginTop: '6px', color: '#333' }}>{post.text}</p>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '10px', color: '#0070f3', fontSize: '14px' }}>
-        <span
-          onClick={() => handleUpvote(post.id)}
-          style={{ cursor: 'pointer', fontSize: '16px', fontWeight: 'bold' }}
-        >
-          ↑
-        </span>
-        <span>{post.upvotes}</span>
-        <span
-          onClick={() => handleDownvote(post.id)}
-          style={{ cursor: 'pointer', fontSize: '16px', fontWeight: 'bold' }}
-        >
-          ↓
-        </span>
-        <span
-          onClick={() => handleReply(post.id)}
-          style={{ cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', color: '#0070f3' }}
-        >
-          Reply
-        </span>
-      </div>
-
-      {/* Reply Section */}
-      <div style={{ marginTop: '15px' }}>
-        {post.replies.map((reply) => (
-          <Card
-            key={reply.id}
-            variant="flat"
-            style={{ marginBottom: '10px', padding: '10px', backgroundColor: '#f7f7f7' }}
-          >
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <Avatar color="secondary" text={reply.author[0]} size="sm" />
-              <div>
-                <strong>{reply.author}</strong>
-                <p>{reply.text}</p>
-              </div>
-            </div>
-          </Card>
-        ))}
-
-        {/* Input for Replying to a comment */}
-        {replyInputState === post.id && (
-          <div style={{ marginTop: '10px' }}>
-            <Input
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              placeholder="Write a reply..."
-              fullWidth
-              bordered
-              clearable
-              size="sm"
-            />
-            <Button
-              onClick={() => handleReply(post.id)}
-              size="sm"
-              color="primary"
-              style={{
-                marginTop: '8px',
-                height: '36px',
-                padding: '0 15px',
-                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
-              }}
-            >
-              Post Reply
-            </Button>
-          </div>
-        )}
-      </div>
-    </Card>
-  );
-};
-
-// Main UI Code (TopicTribe)
 export default function TopicTribe() {
-  const router = useRouter();
-  const { forumId } = router.query;
-  const forumTopics = topics.filter(topic => topic.forumId === Number(forumId));
+  const [posts, setPosts] = useState([
+    {
+      post_id: 1,
+      forum_id: 1,
+      parent_post_id: null,
+      user_id: 1,
+      content: "This is a sample topic for discussion. Feel free to share your thoughts.",
+      created_at: "2024-11-25 08:30:00",
+      upvotes: 15,
+      downvotes: 3,
+      username: "John Doe",
+    },
+    {
+      post_id: 2,
+      forum_id: 1,
+      parent_post_id: null,
+      user_id: 2,
+      content: "Here's another interesting topic. Let's dive deep into this subject.",
+      created_at: "2024-11-24 14:00:00",
+      upvotes: 20,
+      downvotes: 5,
+      username: "Jane Doe",
+    },
+    {
+      post_id: 3,
+      forum_id: 1,
+      parent_post_id: null,
+      user_id: 3,
+      content: "I'm curious about your opinions on this particular issue. Let me know!",
+      created_at: "2024-11-23 11:45:00",
+      upvotes: 10,
+      downvotes: 1,
+      username: "Alice Smith",
+    },
+  ]);
+  const [isOpen, setIsOpen] = useState(false); // Modal visibility state
+  const [forumData, setForumData] = useState({
+    name: "",
+    description: "",
+  });
 
   const handleUpvote = (postId) => {
-    // Logic for upvoting a post
     console.log(`Upvoted post: ${postId}`);
   };
 
   const handleDownvote = (postId) => {
-    // Logic for downvoting a post
     console.log(`Downvoted post: ${postId}`);
   };
 
-  const handleReply = (postId) => {
-    // Logic for showing the reply input
-    console.log(`Replying to post: ${postId}`);
+  const handleSubmit = () => {
+    console.log("Forum Data:", forumData);
+    setForumData({ name: "", description: "" }); // Reset the form after submission
   };
 
   return (
-    <div style={{
-      padding: '20px',
-      color: '#333',
-      backgroundColor: '#fff',
-      maxWidth: '800px',
-      margin: 'auto',
-      fontFamily: 'Noto Sans, sans-serif',
-    }}>
-      <h2 style={{
-        fontSize: '24px',
-        marginBottom: '20px',
-        color: '#333',
-        fontWeight: '600',
-      }}>
-        Topics in Forum {forumId}
+    <div
+      style={{
+        padding: "20px",
+        color: "#333",
+        backgroundColor: "#fff",
+        maxWidth: "900px", // Increased max width for more space
+        margin: "auto",
+        fontFamily: "Noto Sans, sans-serif",
+      }}
+    >
+      <h2
+        style={{
+          fontSize: "26px", // Increased font size for title
+          marginBottom: "15px",
+          color: "#333",
+          fontWeight: "600",
+        }}
+      >
+        Topics in Forum
       </h2>
 
-      {/* List of Topics */}
-      <div style={{ marginBottom: '30px' }}>
-        {forumTopics.length > 0 ? (
-          forumTopics.map(topic => (
-            <Card key={topic.id} variant="bordered" style={{ marginBottom: '12px' }}>
-              <Link href={`/forum/${forumId}/topic/${topic.id}`}>
-                <a style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <h3 style={{ fontSize: '18px', fontWeight: '500' }}>{topic.title}</h3>
-                </a>
-              </Link>
-            </Card>
-          ))
-        ) : (
-          <p>No topics available in this forum.</p>
-        )}
+      {/* Button to open the "Create Forum" modal */}
+      <Button
+        auto
+        color="primary"
+        onPress={() => setIsOpen(true)}
+        style={{ marginBottom: "20px" }}
+      >
+        Create Post
+      </Button>
+
+      {/* Grid Layout for the Cards */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(2, 1fr)", // Two columns for larger screens
+          gap: "15px",
+          marginBottom: "20px",
+        }}
+      >
+        {posts.map((post) => (
+          <Card
+            key={post.post_id}
+            variant="bordered"
+            style={{
+              borderRadius: "8px",
+              padding: "10px",
+              boxShadow: "0 1px 5px rgba(0, 0, 0, 0.1)",
+              backgroundColor: "#fff",
+            }}
+          >
+            <CardHeader style={{ display: "flex", alignItems: "center" }}>
+              <Avatar
+                showFallback
+                src="https://images.unsplash.com/broken"
+                size="sm"
+                style={{ marginRight: "10px" }}
+              />
+              <div>
+                <h4
+                  style={{
+                    margin: 0,
+                    fontSize: "16px", // Increased font size for username
+                    fontWeight: "500",
+                    color: "#444",
+                  }}
+                >
+                  {post.username}
+                </h4>
+                <p
+                  style={{
+                    margin: 0,
+                    color: "#777",
+                    fontSize: "14px", // Increased font size for post details
+                  }}
+                >
+                  Post ID: {post.post_id} | Created At: {new Date(post.created_at).toLocaleDateString()}
+                </p>
+              </div>
+            </CardHeader>
+            <Divider />
+            <CardBody style={{ padding: "8px 0" }}>
+              <p
+                style={{
+                  fontSize: "15px", // Increased font size for post content
+                  color: "#555",
+                  fontWeight: "bold", // Bold content
+                }}
+              >
+                {post.content}
+              </p>
+            </CardBody>
+            <Divider />
+            <CardFooter
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                paddingTop: "8px",
+              }}
+            >
+              <div>
+                <Button
+                  size="xs"
+                  auto
+                  style={{ marginRight: "8px", fontSize: "14px" }} // Increased font size for buttons
+                  onClick={() => handleUpvote(post.post_id)}
+                >
+                  ↑ {post.upvotes}
+                </Button>
+                <Button
+                  size="xs"
+                  auto
+                  style={{ fontSize: "14px" }} // Increased font size for buttons
+                  onClick={() => handleDownvote(post.post_id)}
+                >
+                  ↓ {post.downvotes}
+                </Button>
+              </div>
+
+              {/* Wrap the View Topic Button with NextLink */}
+              <NextLink href={"/topic/"+post.post_id} passHref>
+                <Button
+                  size="xs"
+                  color="primary"
+                  style={{ fontSize: "14px" }}
+                >
+                  View Topic
+                </Button>
+              </NextLink>
+            </CardFooter>
+          </Card>
+        ))}
       </div>
-
-      {/* New Post Section */}
-      <div style={{ marginBottom: '30px' }}>
-        <h3 style={{ fontSize: '22px', fontWeight: '500', marginBottom: '12px' }}>Create a New Post</h3>
-
-        <div style={{ marginBottom: '18px' }}>
-          <Input
-            placeholder="Post Title"
-            fullWidth
-            bordered
-            clearable
-            size="lg"
-          />
-        </div>
-
-        <div style={{ marginBottom: '18px' }}>
-          <Input
-            placeholder="Post Text"
-            fullWidth
-            bordered
-            clearable
-            size="lg"
-          />
-        </div>
-
-        <Button
-          size="sm"
-          color="primary"
-          style={{
-            marginTop: '10px',
-            height: '36px',
-            padding: '0 15px',
-            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
-          }}
-        >
-          Create Post
-        </Button>
-      </div>
-
-      {/* Sample Post Display */}
-      <Post
-        post={samplePost}
-        handleUpvote={handleUpvote}
-        handleDownvote={handleDownvote}
-        handleReply={handleReply}
-        replyInputState={1} // showing the reply input for this post
-        setReplyInputState={() => {}}
-      />
 
       {/* Back Button */}
-<div style={{ marginTop: '20px', textAlign: 'center' }}>
-  <Link href="/home">
-    <Button auto color="primary" size="sm">
-      Back to Homepage
-    </Button>
-  </Link>
-</div>
+      <div style={{ marginTop: "20px", textAlign: "center" }}>
+        <Link href="/home">
+          <Button auto color="primary" size="sm" style={{ fontSize: "14px" }}>
+            Back to Homepage
+          </Button>
+        </Link>
+      </div>
+
+      {/* Create Forum Modal */}
+      <Modal isOpen={isOpen} onOpenChange={setIsOpen}>
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">Create Post</ModalHeader>
+              <ModalBody>
+                <Textarea
+                  label="Description"
+                  variant="bordered"
+                  labelPlacement="outside"
+                  value={forumData.description}
+                  onValueChange={(value) => setForumData({ ...forumData, description: value })}
+                  placeholder="Enter the Topic description"
+                  defaultValue=""
+                />
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={onClose}>
+                  Cancel
+                </Button>
+                <Button
+                  color="primary"
+                  onPress={() => {
+                    handleSubmit();
+                    onClose();
+                  }}
+                >
+                  Create
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </div>
   );
 }
