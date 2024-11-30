@@ -4,17 +4,18 @@ import {Card, CardHeader, CardBody, CardFooter, Divider, Textarea, Input, Skelet
 import { useUser } from './UserContext';
 import { Forum } from '@/types/types';
 
-export default function ForumList(props: { upvotes: number; downvotes: number; payload: any}) {
-    const { upvotes, downvotes, payload } = props;
+export default function ForumList(props: { upvotes: number; downvotes: number; payload: any; voted: () => void; uservote: string | null}) {
+    const { upvotes, downvotes, payload, voted, uservote } = props;
     const { username, userId } = useUser();
     
     const postVote = async (type: string) => {
         try {
-            const response = await axios.post('https://pi45ah2e94.execute-api.us-west-1.amazonaws.com/discussion_forum/vote', {...payload, type}, {
+            await axios.post('https://pi45ah2e94.execute-api.us-west-1.amazonaws.com/discussion_forum/vote', {...payload, 'vote_type':type}, {
               headers: {
                 'Content-Type': 'application/json'
               }
             });
+            voted();
           }catch(e) {
             console.error(e)
           }
@@ -23,6 +24,7 @@ export default function ForumList(props: { upvotes: number; downvotes: number; p
         <>
         <div className="flex items-center gap-2 mt-1">
             <Button
+            isDisabled={uservote === 'upvote'}
             onPress={()=>postVote('upvote')}
             isIconOnly
             variant="light"
@@ -44,6 +46,7 @@ export default function ForumList(props: { upvotes: number; downvotes: number; p
             <p className="text-md font-medium">{upvotes}</p>
 
             <Button
+            isDisabled={uservote === 'downvote'}
             onPress={()=>postVote('downvote')}
             isIconOnly
             variant="light"

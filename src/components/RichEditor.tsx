@@ -7,7 +7,7 @@ import { RichEditorProps } from '@/types/types';
 import { stateToHTML } from 'draft-js-export-html';
 const Editor = dynamic(() => import('react-draft-wysiwyg').then(mod => mod.Editor), { ssr: false });
 
-const RichEditor: React.FC<RichEditorProps> = ({ onSubmit }) => {
+const RichEditor: React.FC<RichEditorProps> = ({ onSubmit, confirmLabel }) => {
   const [editorState, setEditorState] = useState<EditorState>(EditorState.createEmpty());
 
   const onEditorStateChange = (newEditorState: EditorState): void => {
@@ -30,7 +30,7 @@ const RichEditor: React.FC<RichEditorProps> = ({ onSubmit }) => {
         />
       </div>
       <div className='text-right mt-5'>
-      <Button color="primary" variant="flat" onPress={handleButtonClick} >Start Discussion</Button>
+      <Button color="primary" variant="flat" onPress={handleButtonClick} >{confirmLabel}</Button>
       </div>
     </div>
   );

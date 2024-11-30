@@ -11,6 +11,7 @@ export type Forum = {
 
 export interface RichEditorProps {
     onSubmit: (editorState: RawDraftContentState ) => void;
+    confirmLabel: string;
 }
 
 export type Post = {
@@ -20,4 +21,5 @@ export type Post = {
     post_id: string;
     user_name: string;
     created_at: string;
+    user_vote: string | null;
 }

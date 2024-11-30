@@ -16,56 +16,43 @@ export default function ForumPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [currentForum, setCurrentForum] = useState<Forum>()
   const [topics, setTopics] = useState<Post[]>([]);
-  const [newDiscussion, setNewDiscussion] = useState<any>({
-    user_id : '',
-    user_name :'',
-    content : '',
-    forum_id : ''
-  });
-  
-  useEffect(()=>{
-    setNewDiscussion({
-      ...newDiscussion,
-      user_id: userId,
-      user_name: username
-    })
-  },[username,userId])
 
-  const fetchTopics = async () => {
+  const fetchCurrentForum = async () => {
     try {
-      setNewDiscussion({
-        ...newDiscussion,
-        forum_id : forumId
-      })
       const forumIdReq = (forumId as string)?.replace('#','%23')
       setIsLoading(true);
       const forumResponse = await axios.get(`https://pi45ah2e94.execute-api.us-west-1.amazonaws.com/discussion_forum/get_forums?forum_id=${forumIdReq}`);
       setCurrentForum(forumResponse.data?.forum);
-      const result = await axios.get(`https://pi45ah2e94.execute-api.us-west-1.amazonaws.com/discussion_forum/get_posts?forum_id=${forumIdReq}`);
-      setTopics(result.data);
-      console.log(result.data)
-      setIsLoading(false)
+      fetchTopics();
     } catch (error) {
       console.error('Error fetching forums:', error);
+    }
+  }
+  const fetchTopics = async () => {
+    try {
+      const forumIdReq = (forumId as string)?.replace('#','%23')
+      const result = await axios.get(`https://pi45ah2e94.execute-api.us-west-1.amazonaws.com/discussion_forum/get_posts?forum_id=${forumIdReq}&user_id=${userId}`);
+      setTopics(result.data);
+      setIsLoading(false)
+    } catch (error) {
+      console.error('Error fetching topics:', error);
     }
   };
 
   useEffect(() => {
-    if(forumId)
+    if(forumId && userId)
     fetchTopics();
-  }, [forumId]);
+  }, [forumId, userId]);
 
-  const handleEditorSubmit = (content: RawDraftContentState ) => {
-    setNewDiscussion({
-      ...newDiscussion,
-      content: JSON.stringify(content)
-    })
-    postDiscusion();
-  };
-
-  const postDiscusion = async () => {
+  const handleEditorSubmit = async (content: RawDraftContentState ) => {
     try {
-      const response = await axios.post('https://pi45ah2e94.execute-api.us-west-1.amazonaws.com/discussion_forum/create_post', newDiscussion, {
+      const payload = {
+        user_id : userId,
+        user_name :username,
+        content : JSON.stringify(content),
+        forum_id : forumId
+      }
+      const response = await axios.post('https://pi45ah2e94.execute-api.us-west-1.amazonaws.com/discussion_forum/create_post', payload, {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -75,7 +62,7 @@ export default function ForumPage() {
     }catch(e) {
       console.error(e)
     }
-  }
+  };
 
   const getHtml = (savedContent: string) => {
     const rawContent = JSON.parse(savedContent);
@@ -126,7 +113,7 @@ export default function ForumPage() {
             <div className="flex-grow flex flex-col">
               {topics.length ? (
                 topics.map((topic) => (
-                  <Card className="" key={topic.post_id}>
+                  <Card className="mb-5" key={topic.post_id}>
                     <CardHeader className="flex justify-between items-center">
                       <div className="flex gap-3 items-center flex-grow">
                         <Avatar showFallback src="https://images.unsplash.com/broken" />
@@ -143,7 +130,7 @@ export default function ForumPage() {
                     <Divider/>
                     <CardFooter className="flex justify-between items-center">
                       <div className="flex gap-3 items-center flex-grow">
-                        <Votes upvotes={topic.upvotes} downvotes={topic.downvotes} payload={{forum_id:forumId,user_id:userId,post_id:topic.post_id}}/>
+                        <Votes uservote={topic.user_vote} upvotes={topic.upvotes} downvotes={topic.downvotes} voted={fetchTopics} payload={{forum_id:forumId,user_id:userId,post_id:topic.post_id}}/>
                       </div>
                       <div className="flex flex-col items-end">
                         <Link href={"/topic/"+(topic.post_id)?.replace('#','%23')} showAnchorIcon className='text-blue-500 underline hover:text-blue-700'>
@@ -159,7 +146,7 @@ export default function ForumPage() {
             </div>
 
             <div className="flex-none mx-auto">
-              <RichEditor onSubmit={handleEditorSubmit} />
+              <RichEditor onSubmit={handleEditorSubmit} confirmLabel={'Start Discussion'}/>
             </div>
           </div>
         </div>
