@@ -2,31 +2,23 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import {Card, CardHeader, CardBody, CardFooter, Divider, Textarea, Input, Skeleton, Avatar,Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, Link } from "@nextui-org/react";
 import { useUser } from './UserContext';
+import { Forum } from '@/types/types';
 
-
-type Forum = {
-    forum_id?: string;
-    name: string;
-    description: string;
-    created_by: string | null;
-    created_by_name: string | null;
-    created_at?: string | null;
-  };
 export default function ForumList() {
   const {isOpen, onOpen, onOpenChange} = useDisclosure();
   const { username, userId } = useUser();
   const [forumData, setForumData] = useState<Forum>({
-    name: '',
+    forum_name: '',
     description: '',
-    created_by: '',
-    created_by_name: ''
+    created_by_user_id: '',
+    created_by_user: ''
   });
 
   useEffect(()=>{
     setForumData({
       ...forumData,
-      created_by: userId,
-      created_by_name: username
+      created_by_user_id: userId,
+      created_by_user: username
     })
   },[username,userId])
 
@@ -37,8 +29,8 @@ export default function ForumList() {
   const fetchForums = async () => {
     try {
       setIsLoading(true)
-      const result = await axios.get('https://6fd92qzz05.execute-api.us-west-1.amazonaws.com/getForums');
-      setForums(result.data);
+      const result = await axios.get('https://pi45ah2e94.execute-api.us-west-1.amazonaws.com/discussion_forum/get_forums');
+      setForums(result.data?.forums || []);
       setIsLoading(false)
     } catch (error) {
       console.error('Error fetching forums:', error);
@@ -53,13 +45,13 @@ export default function ForumList() {
 
   const handleSubmit = async () => {
     try {
-      await axios.post('https://6fd92qzz05.execute-api.us-west-1.amazonaws.com/createForums', forumData, {
+      await axios.post('https://pi45ah2e94.execute-api.us-west-1.amazonaws.com/discussion_forum/create_forum', forumData, {
         headers: {
           'Content-Type': 'application/json'
         }
       });
       fetchForums();
-      setForumData({...forumData, name: '', description: ''})
+      setForumData({...forumData, forum_name: '', description: ''})
     } catch (error) { console.error(error) }
   };
 
@@ -94,20 +86,20 @@ export default function ForumList() {
                   <CardHeader className="flex gap-3">
                     <Avatar showFallback src='https://images.unsplash.com/broken' />
                     <div className="flex flex-col">
-                      <p className="text-md">{forum.created_by_name}</p>
+                      <p className="text-md">{forum.created_by_user}</p>
                       <p className="text-small text-default-500">{forum.created_at}</p>
                     </div>
                   </CardHeader>
                   <Divider/>
                   <CardBody>
-                    <p className='font-bold'>{forum.name}</p>
+                    <p className='font-bold'>{forum.forum_name}</p>
                     <p>
                       {forum.description}
                     </p>
                   </CardBody>
                   <Divider/>
                   <CardFooter>
-                  <Link href={"/forum/"+forum.forum_id} showAnchorIcon className='text-blue-500 underline hover:text-blue-700'>
+                  <Link href={"/forum/"+(forum.forum_id)?.replace('#','%23')} showAnchorIcon className='text-blue-500 underline hover:text-blue-700'>
                     Explore the Forum 
                   </Link>
                   </CardFooter>
@@ -127,8 +119,8 @@ export default function ForumList() {
                   label="Name"
                   labelPlacement="outside"
                   placeholder=" "
-                  value={forumData.name}
-                  onValueChange={(value: string)=> setForumData({...forumData, name: value})}
+                  value={forumData.forum_name}
+                  onValueChange={(value: string)=> setForumData({...forumData, forum_name: value})}
                   variant="bordered"/>
                   <Textarea
                     label="Description"

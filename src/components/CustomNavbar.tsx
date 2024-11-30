@@ -10,7 +10,9 @@ export default function CustomNavbar(props: any) {
     <>
     <Navbar isBordered>
       <NavbarBrand>
+        <Link href="/">
         <p className="font-bold text-inherit text-3xl font-mono" >TopicTribe</p>
+        </Link>
       </NavbarBrand>
       <NavbarContent justify="end">
         <NavbarItem className="hidden lg:flex">
