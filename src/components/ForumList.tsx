@@ -2,16 +2,8 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import {Card, CardHeader, CardBody, CardFooter, Divider, Textarea, Input, Skeleton, Avatar,Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, Link } from "@nextui-org/react";
 import { useUser } from './UserContext';
+import { Forum } from '@/types/types';
 
-
-type Forum = {
-    forum_id?: string;
-    forum_name: string;
-    description: string;
-    created_by_user_id: string | null;
-    created_by_user: string | null;
-    created_at?: string | null;
-  };
 export default function ForumList() {
   const {isOpen, onOpen, onOpenChange} = useDisclosure();
   const { username, userId } = useUser();
@@ -107,7 +99,7 @@ export default function ForumList() {
                   </CardBody>
                   <Divider/>
                   <CardFooter>
-                  <Link href={"/forum/"+forum.forum_id} showAnchorIcon className='text-blue-500 underline hover:text-blue-700'>
+                  <Link href={"/forum/"+(forum.forum_id)?.replace('#','%23')} showAnchorIcon className='text-blue-500 underline hover:text-blue-700'>
                     Explore the Forum 
                   </Link>
                   </CardFooter>

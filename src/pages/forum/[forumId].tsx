@@ -1,255 +1,169 @@
-import { useState } from 'react';
-import { Input, Card, Button, Avatar } from '@nextui-org/react';
-import Link from 'next/link';
 import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
+import axios from 'axios';
+import { Forum, Post } from '@/types/types';
+import { Avatar, Button, Card, CardBody, CardFooter, CardHeader, Divider, Link, Skeleton } from '@nextui-org/react';
+import RichEditor from '@/components/RichEditor';
+import { EditorState, RawDraftContentState, convertFromRaw, convertToRaw } from 'draft-js';
+import { useUser } from '@/components/UserContext';
+import { stateToHTML } from 'draft-js-export-html';
+import Votes from '@/components/Votes';
 
-// Dummy Topics Data
-const topics = [
-  { id: 1, title: 'Topic 1', forumId: 1 },
-  { id: 2, title: 'Topic 2', forumId: 1 },
-  { id: 3, title: 'Topic 3', forumId: 2 },
-];
-
-// Sample Post Data
-const samplePost = {
-  id: 1,
-  author: 'John Doe',
-  text: 'This is a sample post in the discussion forum. What are your thoughts on the topic?',
-  upvotes: 10,
-  downvotes: 2,
-  replies: [
-    { id: 1, author: 'Jane Doe', text: 'I agree with the points mentioned here!' },
-    { id: 2, author: 'Alice Smith', text: 'This is a very interesting discussion.' },
-  ],
-};
-
-// Post Component (UI Only)
-const Post = ({ post, handleUpvote, handleDownvote, handleReply, replyInputState, setReplyInputState }) => {
-  const [replyText, setReplyText] = useState('');
-
-  return (
-    <Card
-      variant="bordered"
-      style={{
-        marginBottom: '12px',
-        padding: '15px',
-        backgroundColor: '#ffffff',
-        borderRadius: '8px',
-        boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-        border: '1px solid #e1e1e1',
-      }}
-    >
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-        <Avatar color="primary" text={post.author[0]} size="sm" />
-        <div style={{ flex: 1 }}>
-          <strong style={{ fontSize: '16px' }}>{post.author}</strong>
-          <p style={{ fontSize: '14px', marginTop: '6px', color: '#333' }}>{post.text}</p>
-        </div>
-      </div>
-
-      <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '10px', color: '#0070f3', fontSize: '14px' }}>
-        <span
-          onClick={() => handleUpvote(post.id)}
-          style={{ cursor: 'pointer', fontSize: '16px', fontWeight: 'bold' }}
-        >
-          ↑
-        </span>
-        <span>{post.upvotes}</span>
-        <span
-          onClick={() => handleDownvote(post.id)}
-          style={{ cursor: 'pointer', fontSize: '16px', fontWeight: 'bold' }}
-        >
-          ↓
-        </span>
-        <span
-          onClick={() => handleReply(post.id)}
-          style={{ cursor: 'pointer', fontSize: '14px', fontWeight: 'bold', color: '#0070f3' }}
-        >
-          Reply
-        </span>
-      </div>
-
-      {/* Reply Section */}
-      <div style={{ marginTop: '15px' }}>
-        {post.replies.map((reply) => (
-          <Card
-            key={reply.id}
-            variant="flat"
-            style={{ marginBottom: '10px', padding: '10px', backgroundColor: '#f7f7f7' }}
-          >
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <Avatar color="secondary" text={reply.author[0]} size="sm" />
-              <div>
-                <strong>{reply.author}</strong>
-                <p>{reply.text}</p>
-              </div>
-            </div>
-          </Card>
-        ))}
-
-        {/* Input for Replying to a comment */}
-        {replyInputState === post.id && (
-          <div style={{ marginTop: '10px' }}>
-            <Input
-              value={replyText}
-              onChange={(e) => setReplyText(e.target.value)}
-              placeholder="Write a reply..."
-              fullWidth
-              bordered
-              clearable
-              size="sm"
-              style={{
-                backgroundColor: '#fff',
-                color: '#333',
-                borderRadius: '8px',
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-              }}
-            />
-            <Button
-              onClick={() => handleReply(post.id)}
-              size="sm"
-              color="primary"
-              style={{
-                marginTop: '8px',
-                height: '36px',
-                padding: '0 15px',
-                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
-              }}
-            >
-              Post Reply
-            </Button>
-          </div>
-        )}
-      </div>
-    </Card>
-  );
-};
-
-// Main UI Code (TopicTribe)
-export default function TopicTribe() {
+export default function ForumPage() {
   const router = useRouter();
   const { forumId } = router.query;
-  const forumTopics = topics.filter(topic => topic.forumId === Number(forumId));
+  const { username, userId } = useUser();
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentForum, setCurrentForum] = useState<Forum>()
+  const [topics, setTopics] = useState<Post[]>([]);
+  const [newDiscussion, setNewDiscussion] = useState<any>({
+    user_id : '',
+    user_name :'',
+    content : '',
+    forum_id : ''
+  });
+  
+  useEffect(()=>{
+    setNewDiscussion({
+      ...newDiscussion,
+      user_id: userId,
+      user_name: username
+    })
+  },[username,userId])
 
-  const handleUpvote = (postId) => {
-    // Logic for upvoting a post
-    console.log(`Upvoted post: ${postId}`);
+  const fetchTopics = async () => {
+    try {
+      setNewDiscussion({
+        ...newDiscussion,
+        forum_id : forumId
+      })
+      const forumIdReq = (forumId as string)?.replace('#','%23')
+      setIsLoading(true);
+      const forumResponse = await axios.get(`https://pi45ah2e94.execute-api.us-west-1.amazonaws.com/discussion_forum/get_forums?forum_id=${forumIdReq}`);
+      setCurrentForum(forumResponse.data?.forum);
+      const result = await axios.get(`https://pi45ah2e94.execute-api.us-west-1.amazonaws.com/discussion_forum/get_posts?forum_id=${forumIdReq}`);
+      setTopics(result.data);
+      console.log(result.data)
+      setIsLoading(false)
+    } catch (error) {
+      console.error('Error fetching forums:', error);
+    }
   };
 
-  const handleDownvote = (postId) => {
-    // Logic for downvoting a post
-    console.log(`Downvoted post: ${postId}`);
+  useEffect(() => {
+    if(forumId)
+    fetchTopics();
+  }, [forumId]);
+
+  const handleEditorSubmit = (content: RawDraftContentState ) => {
+    setNewDiscussion({
+      ...newDiscussion,
+      content: JSON.stringify(content)
+    })
+    postDiscusion();
   };
 
-  const handleReply = (postId) => {
-    // Logic for showing the reply input
-    console.log(`Replying to post: ${postId}`);
-  };
+  const postDiscusion = async () => {
+    try {
+      const response = await axios.post('https://pi45ah2e94.execute-api.us-west-1.amazonaws.com/discussion_forum/create_post', newDiscussion, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      const postId = response.data?.post_id?.replace('#','%23')
+      router.push(`/topic/${postId}`)
+    }catch(e) {
+      console.error(e)
+    }
+  }
 
+  const getHtml = (savedContent: string) => {
+    const rawContent = JSON.parse(savedContent);
+    const contentState = convertFromRaw(rawContent);
+    const htmlContent = stateToHTML(contentState);
+    return htmlContent;
+  }
   return (
-    <div style={{
-      padding: '20px',
-      color: '#333',
-      backgroundColor: '#fff',
-      maxWidth: '800px',
-      margin: 'auto',
-      fontFamily: 'Noto Sans, sans-serif',
-    }}>
-      <h2 style={{
-        fontSize: '24px',
-        marginBottom: '20px',
-        color: '#333',
-        fontWeight: '600',
-      }}>
-        Topics in Forum {forumId}
-      </h2>
+    <div className="px-20 py-2 flex flex-col min-h-[calc(100vh-65px)]">
+      {isLoading ? (
+        <>
+          <div className="pb-10 flex flex-col items-center justify-center">
+            <Skeleton className="w-[500px] rounded-lg text-center">
+              <div className="h-8 rounded-lg bg-default-200"></div>
+            </Skeleton>
+            <Skeleton className="mt-2 w-[500px] rounded-lg text-center">
+              <div className="h-8 rounded-lg bg-default-200"></div>
+            </Skeleton>
+          </div>
+          <Card className="space-y-5 p-4" radius="lg">
+            <div className="space-y-3">
+              <Skeleton className="w-3/5 rounded-lg">
+                <div className="h-3 w-3/5 rounded-lg bg-default-200"></div>
+              </Skeleton>
+              <Skeleton className="w-2/5 rounded-lg">
+                <div className="h-3 w-2/5 rounded-lg bg-default-300"></div>
+              </Skeleton>
+            </div>
+            <Skeleton className="rounded-lg">
+              <div className="h-24 rounded-lg bg-default-300"></div>
+            </Skeleton>
+          </Card>
+        </>
+      ) : (
+        <div className="flex flex-col flex-grow">
+          <div className="pb-10 flex flex-col items-center justify-center">
+            <div className="text-4xl font-bold text-center">
+              {currentForum?.forum_name}
+            </div>
+            <div className="mt-2 text-lg text-center">
+              {currentForum?.description}
+            </div>
+          </div>
 
-      {/* List of Topics */}
-      <div style={{ marginBottom: '30px' }}>
-        {forumTopics.length > 0 ? (
-          forumTopics.map(topic => (
-            <Card key={topic.id} variant="bordered" style={{ marginBottom: '12px' }}>
-              <Link href={`/forum/${forumId}/topic/${topic.id}`}>
-                <a style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <h3 style={{ fontSize: '18px', fontWeight: '500' }}>{topic.title}</h3>
-                </a>
-              </Link>
-            </Card>
-          ))
-        ) : (
-          <p>No topics available in this forum.</p>
-        )}
-      </div>
 
-      {/* New Post Section */}
-      <div style={{ marginBottom: '30px' }}>
-        <h3 style={{ fontSize: '22px', fontWeight: '500', marginBottom: '12px' }}>Create a New Post</h3>
+          <div className="flex flex-col flex-grow">
 
-        <div style={{ marginBottom: '18px' }}>
-          <Input
-            placeholder="Post Title"
-            fullWidth
-            bordered
-            clearable
-            size="lg"
-            style={{
-              backgroundColor: '#fff',
-              color: '#333',
-              borderRadius: '8px',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-            }}
-          />
+            <div className="flex-grow flex flex-col">
+              {topics.length ? (
+                topics.map((topic) => (
+                  <Card className="" key={topic.post_id}>
+                    <CardHeader className="flex justify-between items-center">
+                      <div className="flex gap-3 items-center flex-grow">
+                        <Avatar showFallback src="https://images.unsplash.com/broken" />
+                        <div className="flex flex-col">
+                          <p className="text-md">{topic.user_name}</p>
+                          <p className="text-small text-default-500">{topic.created_at}</p>
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <Divider/>
+                    <CardBody>
+                      <div dangerouslySetInnerHTML={{ __html: getHtml(topic.content) }} />
+                    </CardBody>
+                    <Divider/>
+                    <CardFooter className="flex justify-between items-center">
+                      <div className="flex gap-3 items-center flex-grow">
+                        <Votes upvotes={topic.upvotes} downvotes={topic.downvotes} payload={{forum_id:forumId,user_id:userId,post_id:topic.post_id}}/>
+                      </div>
+                      <div className="flex flex-col items-end">
+                        <Link href={"/topic/"+(topic.post_id)?.replace('#','%23')} showAnchorIcon className='text-blue-500 underline hover:text-blue-700'>
+                          Explore the Discussion 
+                        </Link>
+                      </div>
+                    </CardFooter>
+                  </Card>
+                ))
+              ) : (
+                <div>No Discussions Yet</div>
+              )}
+            </div>
+
+            <div className="flex-none mx-auto">
+              <RichEditor onSubmit={handleEditorSubmit} />
+            </div>
+          </div>
         </div>
-
-        <div style={{ marginBottom: '18px' }}>
-          <Input
-            placeholder="Post Text"
-            fullWidth
-            bordered
-            clearable
-            size="lg"
-            multiline
-            style={{
-              backgroundColor: '#fff',
-              color: '#333',
-              borderRadius: '8px',
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-            }}
-          />
-        </div>
-
-        <Button
-          size="sm"
-          color="primary"
-          style={{
-            marginTop: '10px',
-            height: '36px',
-            padding: '0 15px',
-            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
-          }}
-        >
-          Create Post
-        </Button>
-      </div>
-
-      {/* Sample Post Display */}
-      <Post
-        post={samplePost}
-        handleUpvote={handleUpvote}
-        handleDownvote={handleDownvote}
-        handleReply={handleReply}
-        replyInputState={1} // showing the reply input for this post
-        setReplyInputState={() => {}}
-      />
-
-      {/* Back Button */}
-<div style={{ marginTop: '20px', textAlign: 'center' }}>
-  <Link href="/home">
-    <Button auto color="primary" size="sm">
-      Back to Homepage
-    </Button>
-  </Link>
-</div>
+      )}
     </div>
-  );
+  )  
 }
