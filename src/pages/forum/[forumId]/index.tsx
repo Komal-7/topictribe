@@ -41,7 +41,7 @@ export default function ForumPage() {
 
   useEffect(() => {
     if(forumId && userId)
-    fetchTopics();
+      fetchCurrentForum();
   }, [forumId, userId]);
 
   const handleEditorSubmit = async (content: RawDraftContentState ) => {
@@ -58,7 +58,7 @@ export default function ForumPage() {
         }
       });
       const postId = response.data?.post_id?.replace('#','%23')
-      router.push(`/topic/${postId}`)
+      router.push(`/forum/${(forumId as string)?.replace('#','%23')}/post/${postId}`)
     }catch(e) {
       console.error(e)
     }
@@ -109,11 +109,11 @@ export default function ForumPage() {
 
 
           <div className="flex flex-col flex-grow">
-
+            <RichEditor onSubmit={handleEditorSubmit} confirmLabel={'Start Discussion'}/>
             <div className="flex-grow flex flex-col">
               {topics.length ? (
                 topics.map((topic) => (
-                  <Card className="mb-5" key={topic.post_id}>
+                  <Card className="mt-5" key={topic.post_id}>
                     <CardHeader className="flex justify-between items-center">
                       <div className="flex gap-3 items-center flex-grow">
                         <Avatar showFallback src="https://images.unsplash.com/broken" />
@@ -133,7 +133,7 @@ export default function ForumPage() {
                         <Votes uservote={topic.user_vote} upvotes={topic.upvotes} downvotes={topic.downvotes} voted={fetchTopics} payload={{forum_id:forumId,user_id:userId,post_id:topic.post_id}}/>
                       </div>
                       <div className="flex flex-col items-end">
-                        <Link href={"/topic/"+(topic.post_id)?.replace('#','%23')} showAnchorIcon className='text-blue-500 underline hover:text-blue-700'>
+                        <Link href={`/forum/${(forumId as string)?.replace('#','%23')}/post/${(topic.post_id)?.replace('#','%23')}`} showAnchorIcon className='text-blue-500 underline hover:text-blue-700'>
                           Explore the Discussion 
                         </Link>
                       </div>
@@ -143,10 +143,6 @@ export default function ForumPage() {
               ) : (
                 <div>No Discussions Yet</div>
               )}
-            </div>
-
-            <div className="flex-none mx-auto">
-              <RichEditor onSubmit={handleEditorSubmit} confirmLabel={'Start Discussion'}/>
             </div>
           </div>
         </div>
