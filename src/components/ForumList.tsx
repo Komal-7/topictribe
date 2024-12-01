@@ -29,7 +29,7 @@ export default function ForumList() {
   const fetchForums = async () => {
     try {
       setIsLoading(true)
-      const result = await axios.get('https://pi45ah2e94.execute-api.us-west-1.amazonaws.com/discussion_forum/get_forums');
+      const result = await axios.get(`${process.env.NEXT_PUBLIC_API_ROUTE}get_forums`);
       setForums(result.data?.forums || []);
       setIsLoading(false)
     } catch (error) {
@@ -45,7 +45,7 @@ export default function ForumList() {
 
   const handleSubmit = async () => {
     try {
-      await axios.post('https://pi45ah2e94.execute-api.us-west-1.amazonaws.com/discussion_forum/create_forum', forumData, {
+      await axios.post(`${process.env.NEXT_PUBLIC_API_ROUTE}create_forum`, forumData, {
         headers: {
           'Content-Type': 'application/json'
         }

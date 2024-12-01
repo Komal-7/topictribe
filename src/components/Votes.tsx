@@ -10,7 +10,7 @@ export default function ForumList(props: { upvotes: number; downvotes: number; p
     
     const postVote = async (type: string) => {
         try {
-            await axios.post('https://pi45ah2e94.execute-api.us-west-1.amazonaws.com/discussion_forum/vote', {...payload, 'vote_type':type}, {
+            await axios.post(`${process.env.NEXT_PUBLIC_API_ROUTE}vote`, {...payload, 'vote_type':type}, {
               headers: {
                 'Content-Type': 'application/json'
               }
