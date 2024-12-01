@@ -5,12 +5,13 @@ import '../styles/global.css'
 import { UserProvider } from '@/components/UserContext'
 import { Authenticator } from '@aws-amplify/ui-react'
 import Navbar from '@/components/CustomNavbar';
-
+const userPoolId = process.env.NEXT_PUBLIC_USER_POOL_ID || '';
+const clientId = process.env.NEXT_PUBLIC_USER_POOL_CLIENT_ID || '';
 Amplify.configure({
   Auth: {
     Cognito: {
-    userPoolId: 'us-west-1_y8zDAy7sB',
-    userPoolClientId: '5etu9t1nrtehlr5d66tneu7l63',
+    userPoolId,
+    userPoolClientId: clientId,
   }
 },
 })

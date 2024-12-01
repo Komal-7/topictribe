@@ -21,7 +21,7 @@ export default function ForumPage() {
     try {
       const forumIdReq = (forumId as string)?.replace('#','%23')
       setIsLoading(true);
-      const forumResponse = await axios.get(`https://pi45ah2e94.execute-api.us-west-1.amazonaws.com/discussion_forum/get_forums?forum_id=${forumIdReq}`);
+      const forumResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_ROUTE}get_forums?forum_id=${forumIdReq}`);
       setCurrentForum(forumResponse.data?.forum);
       fetchTopics();
     } catch (error) {
@@ -31,7 +31,7 @@ export default function ForumPage() {
   const fetchTopics = async () => {
     try {
       const forumIdReq = (forumId as string)?.replace('#','%23')
-      const result = await axios.get(`https://pi45ah2e94.execute-api.us-west-1.amazonaws.com/discussion_forum/get_posts?forum_id=${forumIdReq}&user_id=${userId}`);
+      const result = await axios.get(`${process.env.NEXT_PUBLIC_API_ROUTE}get_posts?forum_id=${forumIdReq}&user_id=${userId}`);
       setTopics(result.data);
       setIsLoading(false)
     } catch (error) {
@@ -52,7 +52,7 @@ export default function ForumPage() {
         content : JSON.stringify(content),
         forum_id : forumId
       }
-      const response = await axios.post('https://pi45ah2e94.execute-api.us-west-1.amazonaws.com/discussion_forum/create_post', payload, {
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_ROUTE}create_post`, payload, {
         headers: {
           'Content-Type': 'application/json'
         }
