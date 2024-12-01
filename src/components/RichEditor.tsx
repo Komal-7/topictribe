@@ -16,7 +16,8 @@ const RichEditor: React.FC<RichEditorProps> = ({ onSubmit, confirmLabel }) => {
   const handleButtonClick = () => {
     const rawContentState = convertToRaw(editorState.getCurrentContent());
 
-    onSubmit(rawContentState); // Pass the current editorState to the parent
+    onSubmit(rawContentState);
+    setEditorState(EditorState.createEmpty())
   };
   return (
     <div>
@@ -29,7 +30,7 @@ const RichEditor: React.FC<RichEditorProps> = ({ onSubmit, confirmLabel }) => {
           toolbarClassName="toolbar-class"
         />
       </div>
-      <div className='text-right mt-5'>
+      <div className='text-right mt-2'>
       <Button color="primary" variant="flat" onPress={handleButtonClick} >{confirmLabel}</Button>
       </div>
     </div>
