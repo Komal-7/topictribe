@@ -15,9 +15,10 @@ const RichEditor: React.FC<RichEditorProps> = ({ onSubmit, confirmLabel }) => {
   };
   const handleButtonClick = () => {
     const rawContentState = convertToRaw(editorState.getCurrentContent());
-
-    onSubmit(rawContentState);
-    setEditorState(EditorState.createEmpty())
+    if(editorState.getCurrentContent().hasText()){
+      onSubmit(rawContentState);
+      setEditorState(EditorState.createEmpty())
+    }
   };
   return (
     <div>
