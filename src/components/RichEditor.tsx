@@ -4,7 +4,6 @@ import { convertToRaw, EditorState } from 'draft-js';
 import 'react-draft-wysiwyg/dist/react-draft-wysiwyg.css';
 import { Button } from '@nextui-org/react';
 import { RichEditorProps } from '@/types/types';
-import { stateToHTML } from 'draft-js-export-html';
 const Editor = dynamic(() => import('react-draft-wysiwyg').then(mod => mod.Editor), { ssr: false });
 
 const RichEditor: React.FC<RichEditorProps> = ({ onSubmit, confirmLabel }) => {

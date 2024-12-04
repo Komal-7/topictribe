@@ -2,9 +2,9 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Forum, Post } from '@/types/types';
-import { Avatar, Button, Card, CardBody, CardFooter, CardHeader, Divider, Link, Skeleton } from '@nextui-org/react';
+import { Avatar, Card, CardBody, CardFooter, CardHeader, Divider, Link, Skeleton } from '@nextui-org/react';
 import RichEditor from '@/components/RichEditor';
-import { EditorState, RawDraftContentState, convertFromRaw, convertToRaw } from 'draft-js';
+import { RawDraftContentState, convertFromRaw } from 'draft-js';
 import { useUser } from '@/components/UserContext';
 import { stateToHTML } from 'draft-js-export-html';
 import Votes from '@/components/Votes';
@@ -130,7 +130,7 @@ export default function ForumPage() {
                     <Divider/>
                     <CardFooter className="flex justify-between items-center">
                       <div className="flex gap-3 items-center flex-grow">
-                        <Votes uservote={topic.user_vote} upvotes={topic.upvotes} downvotes={topic.downvotes} voted={fetchTopics} payload={{forum_id:forumId,user_id:userId,post_id:topic.post_id}}/>
+                        <Votes uservote={topic.user_vote} upvotes={topic.upvotes} downvotes={topic.downvotes} voted={fetchTopics} payload={{forum_id:(forumId as string),user_id:userId,post_id:topic.post_id}}/>
                       </div>
                       <div className="flex flex-col items-end">
                         <Link href={`/forum/${(forumId as string)?.replace('#','%23')}/post/${(topic.post_id)?.replace('#','%23')}`} showAnchorIcon className='text-blue-500 underline hover:text-blue-700'>

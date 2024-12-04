@@ -1,12 +1,9 @@
 import axios from 'axios';
-import { useEffect, useState } from 'react';
-import {Card, CardHeader, CardBody, CardFooter, Divider, Textarea, Input, Skeleton, Avatar,Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, useDisclosure, Link } from "@nextui-org/react";
-import { useUser } from './UserContext';
-import { Forum } from '@/types/types';
+import { Button } from "@nextui-org/react";
+import { VotesPayload } from '@/types/types';
 
-export default function ForumList(props: { upvotes: number; downvotes: number; payload: any; voted: () => void; uservote: string | null}) {
+export default function Votes(props: { upvotes: number; downvotes: number; payload: VotesPayload; voted: () => void; uservote: string | null}) {
     const { upvotes, downvotes, payload, voted, uservote } = props;
-    const { username, userId } = useUser();
     
     const postVote = async (type: string) => {
         try {

@@ -1,4 +1,4 @@
-import { EditorState, RawDraftContentState } from "draft-js";
+import { RawDraftContentState } from "draft-js";
 
 export type Forum = {
     forum_id?: string;
@@ -22,4 +22,10 @@ export type Post = {
     user_name: string;
     created_at: string;
     user_vote: string | null;
+}
+
+export type VotesPayload = {
+    forum_id: string;
+    user_id: string | null;
+    post_id: string;
 }

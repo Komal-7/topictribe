@@ -117,7 +117,7 @@ export default function TopicPage() {
             </CardBody>
             <Divider/>
             <CardFooter className="flex justify-between items-center">
-              <Votes uservote={currentPost?.user_vote || null} upvotes={currentPost?.upvotes || 0} downvotes={currentPost?.downvotes || 0} voted={fetchCurrentPost} payload={{forum_id:forumId,user_id:userId,post_id:currentPost?.post_id}}/>
+              <Votes uservote={currentPost?.user_vote || null} upvotes={currentPost?.upvotes || 0} downvotes={currentPost?.downvotes || 0} voted={fetchCurrentPost} payload={{forum_id:(forumId as string),user_id:userId,post_id:currentPost?.post_id || ''}}/>
             </CardFooter>
           </Card>
       
@@ -141,7 +141,7 @@ export default function TopicPage() {
                 </CardBody>
                 <Divider/>
                 <CardFooter className="flex justify-between items-center">
-                  <Votes uservote={comment.user_vote} upvotes={comment.upvotes} downvotes={comment.downvotes} voted={fetchComments} payload={{forum_id:forumId,user_id:userId,post_id:comment.post_id}}/>
+                  <Votes uservote={comment.user_vote} upvotes={comment.upvotes} downvotes={comment.downvotes} voted={fetchComments} payload={{forum_id:(forumId as string),user_id:userId,post_id:comment.post_id}}/>
                 </CardFooter>
               </Card>
             ))
