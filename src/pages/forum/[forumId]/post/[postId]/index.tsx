@@ -43,7 +43,7 @@ export default function TopicPage() {
   };
 
   useEffect(() => {
-    if(postId && userId)
+    if(postId && userId != null)
       fetchCurrentPost();
       fetchComments();
   }, [postId, userId]);
