@@ -40,7 +40,7 @@ export default function ForumPage() {
   };
 
   useEffect(() => {
-    if(forumId && userId)
+    if(forumId && userId !== null)
       fetchCurrentForum();
   }, [forumId, userId]);
 
