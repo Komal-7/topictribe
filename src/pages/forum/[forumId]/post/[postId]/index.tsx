@@ -23,7 +23,7 @@ export default function TopicPage() {
     try {
       const forumIdReq = (forumId as string)?.replace('#','%23')
       const postIdReq = (postId as string)?.replace('#','%23')
-      const postResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_ROUTE}get_posts?forum_id=${forumIdReq}&post_id=${postIdReq}&user_id=${userId}`);
+      const postResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_ROUTE}get_specific_post?forum_id=${forumIdReq}&post_id=${postIdReq}&user_id=${userId}`);
       setCurrentPost(postResponse.data);
       setIsLoading(false)
     } catch (error) {
@@ -43,7 +43,7 @@ export default function TopicPage() {
   };
 
   useEffect(() => {
-    if(postId && userId != null)
+    if(postId !== undefined && userId != null)
       fetchCurrentPost();
       fetchComments();
   }, [postId, userId]);
